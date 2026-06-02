@@ -16,7 +16,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Postgres](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![code style: ruff](https://img.shields.io/badge/code%20style-ruff-261230?logo=ruff&logoColor=white)](https://github.com/astral-sh/ruff)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![License](https://img.shields.io/badge/license-all%20rights%20reserved-red)](LICENSE)
 
 **English** · [Русский](README.ru.md)
 
@@ -216,4 +216,6 @@ GitHub Actions runs the API checks (ruff + pytest) and the web checks
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+**© 2026 Artem. All rights reserved.** This repository is public for portfolio
+and evaluation purposes only — the code may not be used, copied, modified, or
+distributed without written permission. See [LICENSE](LICENSE).

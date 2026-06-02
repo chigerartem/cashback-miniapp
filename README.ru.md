@@ -16,7 +16,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Postgres](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![code style: ruff](https://img.shields.io/badge/code%20style-ruff-261230?logo=ruff&logoColor=white)](https://github.com/astral-sh/ruff)
-[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![License](https://img.shields.io/badge/license-all%20rights%20reserved-red)](LICENSE)
 
 [English](README.md) · **Русский**
 
@@ -217,4 +217,6 @@ GitHub Actions на каждый push прогоняет проверки API (r
 
 ## Лицензия
 
-MIT — см. [LICENSE](LICENSE).
+**© 2026 Artem. Все права защищены.** Репозиторий опубликован только для портфолио
+и ознакомления — код нельзя использовать, копировать, изменять или распространять
+без письменного разрешения. См. [LICENSE](LICENSE).
