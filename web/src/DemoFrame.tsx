@@ -1,23 +1,34 @@
 import type { ReactNode } from "react";
+import mockup from "./assets/iphone-mockup.png";
 
 /**
- * Demo-only phone frame. The Mini App is built for a phone-width Telegram
- * viewport; on a desktop browser it would stretch full-screen, so the static
- * demo (VITE_DEMO=true) renders it inside a centered phone-sized device frame.
- *
- * Sizing uses viewport units (dvh) so the inner app's `h-full` resolves to a
- * definite height. The `transform` on the device makes it the containing block
- * for the app's `position: fixed` bottom nav, so the nav anchors to the phone
- * instead of the window. In real Telegram this wrapper is not used.
+ * Demo-only device mockup. The Mini App targets a phone-width Telegram viewport;
+ * on desktop the static demo (VITE_DEMO=true) renders it inside an iPhone mockup.
+ * The app sits *behind* the mockup PNG and shows through its transparent screen
+ * hole (inset ≈5.1% sides / 2.27% top-bottom); the bezel + Dynamic Island are on
+ * top. The app overlay and the mockup are both sized in % of the device box, so
+ * they stay aligned regardless of the exact box dimensions. A `transform` on the
+ * app layer makes it the containing block for the app's `position: fixed` bottom
+ * nav. On mobile the mockup is hidden and the app is full-bleed; in real Telegram
+ * this wrapper is unused.
  */
 export function DemoFrame({ children }: { children: ReactNode }) {
   return (
-    <div className="fixed inset-0 flex flex-col items-center justify-center gap-3 overflow-hidden bg-[radial-gradient(130%_130%_at_50%_-10%,#102a22_0%,#060606_58%)] p-0 sm:p-6">
-      <div
-        className="relative w-full overflow-hidden bg-[#0a0a0a] shadow-2xl shadow-black/70 h-[100dvh] sm:h-[min(100dvh-5rem,880px)] sm:w-[400px] sm:rounded-[2.5rem] sm:border sm:border-white/10 sm:ring-1 sm:ring-black/40"
-        style={{ transform: "translateZ(0)" }}
-      >
-        {children}
+    <div className="fixed inset-0 flex flex-col items-center justify-center gap-3 overflow-hidden bg-[#070707] p-0 sm:p-4">
+      <div className="relative h-[100dvh] w-full sm:h-[min(100dvh-5rem,820px)] sm:w-[402px]">
+        <div
+          className="absolute inset-0 overflow-hidden bg-[#0a0a0a] sm:left-[5.1%] sm:right-[5.1%] sm:top-[2.27%] sm:bottom-[2.27%]"
+          style={{ transform: "translateZ(0)" }}
+        >
+          {children}
+        </div>
+        <img
+          src={mockup}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          className="pointer-events-none absolute inset-0 hidden h-full w-full select-none sm:block"
+        />
       </div>
       <div className="hidden shrink-0 text-center text-[11px] text-neutral-500 sm:block">
         Telegram Mini App · live demo on mock data ·{" "}
