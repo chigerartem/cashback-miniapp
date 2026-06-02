@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Высота приложения — статичная, чтобы инерция iOS-скролла не пересчитывала
+   `100dvh` и не уносила верх контента за видимую область.
+   --app-h ставится в main.tsx по Telegram.WebApp.viewportStableHeight,
+   фолбэк — 100dvh / 100vh. */
+html, body, #root {
+  height: 100vh;
+  height: 100dvh;
+  height: var(--app-h, 100dvh);
+}
+
+html {
+  touch-action: manipulation;        /* блокирует double-tap zoom */
+  -webkit-text-size-adjust: 100%;    /* запрещает автоувеличение текста */
+  /* Фон обязан быть на <html>, иначе rubber-band overscroll на iOS/Telegram
+     показывает белый дефолт UA вместо тёмной темы. */
+  background: var(--tg-theme-bg-color, #0a0a0a);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--tg-theme-bg-color, #0a0a0a);
+  color: var(--tg-theme-text-color, #fff);
+  overscroll-behavior-y: none;
+}
+
+/* Скрыть scrollbar, но оставить возможность прокрутки */
+* {
+  scrollbar-width: none;            /* Firefox */
+  -ms-overflow-style: none;         /* IE/Edge legacy */
+}
+*::-webkit-scrollbar {
+  display: none;                    /* WebKit (Chrome/Safari/Telegram WebView) */
+  width: 0;
+  height: 0;
+}
+
+/* Минималистичный range — тёмная дорожка + белый thumb */
+.range {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  width: 100%;
+  height: 22px;
+  cursor: pointer;
+}
+.range:focus { outline: none; }
+
+.range::-webkit-slider-runnable-track {
+  height: 4px;
+  background: #2d2d2d;
+  border-radius: 9999px;
+}
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  background: #fff;
+  border-radius: 9999px;
+  margin-top: -9px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  transition: transform 0.1s;
+}
+.range:active::-webkit-slider-thumb { transform: scale(1.08); }
+
+.range::-moz-range-track {
+  height: 4px;
+  background: #2d2d2d;
+  border-radius: 9999px;
+}
+.range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  background: #fff;
+  border: 0;
+  border-radius: 9999px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Премиальная тактильная отдача на нажатие (философия Emil Kowalski):
+   scale(0.97) на :active + сильная ease-out кривая, только transform/opacity
+   (GPU). Правила НАМЕРЕННО вне @layer — так перебивают Tailwind-классы
+   независимо от специфичности. Сама вибрация вешается глобально в haptics.ts.
+   Под prefers-reduced-motion движение выключаем (отклик остаётся мгновенным).
+   ───────────────────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  button,
+  [role="button"],
+  a,
+  summary,
+  .tappable {
+    transition-property: transform, opacity, color, background-color,
+      border-color, fill, stroke, box-shadow, filter;
+    transition-duration: 160ms;
+    transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+
+  button:not([disabled]):not([aria-disabled="true"]):active,
+  [role="button"]:not([aria-disabled="true"]):active,
+  summary:active,
+  .tappable:not([aria-disabled="true"]):active {
+    transform: scale(0.97);
+  }
+}

@@ -1,0 +1,125 @@
+name: cashback-miniapp
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-cashback}
+      POSTGRES_USER: ${POSTGRES_USER:-cashback}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cashback}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cashback} -d ${POSTGRES_DB:-cashback}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: ./api
+    restart: unless-stopped
+    # Runs `alembic upgrade head` then uvicorn (see api/Dockerfile).
+    environment: &api_env
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://cashback:cashback@postgres:5432/cashback}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-change-in-production}
+      ENV: ${ENV:-development}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      TG_BOT_TOKEN: ${TG_BOT_TOKEN:-}
+      TG_BOT_USERNAME: ${TG_BOT_USERNAME:-your_cashback_bot}
+      WEB_DOMAIN: ${WEB_DOMAIN:-localhost:8080}
+      DEMO_SOCIAL_PROOF: ${DEMO_SOCIAL_PROOF:-true}
+      BINGX_API_KEY: ${BINGX_API_KEY:-}
+      BINGX_API_SECRET: ${BINGX_API_SECRET:-}
+      BINGX_DEFAULT_REFERRAL_URL: ${BINGX_DEFAULT_REFERRAL_URL:-}
+      BINANCE_API_KEY: ${BINANCE_API_KEY:-}
+      BINANCE_API_SECRET: ${BINANCE_API_SECRET:-}
+      BINANCE_REBATE_RATE: ${BINANCE_REBATE_RATE:-0}
+      BINANCE_DEFAULT_REFERRAL_URL: ${BINANCE_DEFAULT_REFERRAL_URL:-}
+      BITGET_API_KEY: ${BITGET_API_KEY:-}
+      BITGET_API_SECRET: ${BITGET_API_SECRET:-}
+      BITGET_API_PASSPHRASE: ${BITGET_API_PASSPHRASE:-}
+      BITGET_REBATE_RATE: ${BITGET_REBATE_RATE:-0}
+      BITGET_DEFAULT_REFERRAL_URL: ${BITGET_DEFAULT_REFERRAL_URL:-}
+      MEXC_API_KEY: ${MEXC_API_KEY:-}
+      MEXC_API_SECRET: ${MEXC_API_SECRET:-}
+      MEXC_REBATE_RATE: ${MEXC_REBATE_RATE:-0}
+      MEXC_DEFAULT_REFERRAL_URL: ${MEXC_DEFAULT_REFERRAL_URL:-}
+      BYDFI_API_KEY: ${BYDFI_API_KEY:-}
+      BYDFI_API_SECRET: ${BYDFI_API_SECRET:-}
+      BYDFI_BASE_URL: ${BYDFI_BASE_URL:-https://api.bydfi.com/api}
+      BYDFI_REBATE_RATE: ${BYDFI_REBATE_RATE:-0}
+      BYDFI_DEFAULT_REFERRAL_URL: ${BYDFI_DEFAULT_REFERRAL_URL:-}
+      WITHDRAWAL_MIN_USD: ${WITHDRAWAL_MIN_USD:-1}
+      WITHDRAWAL_DAILY_LIMIT_USD: ${WITHDRAWAL_DAILY_LIMIT_USD:-5000}
+      WITHDRAWAL_MONTHLY_LIMIT_USD: ${WITHDRAWAL_MONTHLY_LIMIT_USD:-20000}
+      WITHDRAWAL_COOLDOWN_MINUTES: ${WITHDRAWAL_COOLDOWN_MINUTES:-30}
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build: ./api
+    restart: unless-stopped
+    command: python -m app.worker
+    environment: *api_env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api:
+        condition: service_started
+
+  bot:
+    build: ./bot
+    restart: unless-stopped
+    environment:
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+      TG_BOT_TOKEN: ${TG_BOT_TOKEN:-}
+      WEB_DOMAIN: ${WEB_DOMAIN:-localhost:8080}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./web
+      args:
+        VITE_API_BASE: ${VITE_API_BASE:-http://localhost:8000}
+        VITE_BOT_USERNAME: ${TG_BOT_USERNAME:-your_cashback_bot}
+    restart: unless-stopped
+    # API origin allowed by the nginx Content-Security-Policy (connect-src).
+    environment:
+      API_ORIGIN: ${VITE_API_BASE:-http://localhost:8000}
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  redis_data:
