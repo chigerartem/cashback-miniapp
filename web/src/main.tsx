@@ -1,8 +1,12 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
+import { DemoFrame } from "./DemoFrame";
 import { installTapHaptics } from "./haptics";
 import "./index.css";
+
+// Static demo build: wrap the app in a phone frame (it's a mobile Mini App).
+const DEMO = import.meta.env.VITE_DEMO === "true";
 
 if (window.Telegram?.WebApp) {
   const tg = window.Telegram.WebApp;
@@ -84,6 +88,12 @@ installTapHaptics();
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    {DEMO ? (
+      <DemoFrame>
+        <App />
+      </DemoFrame>
+    ) : (
+      <App />
+    )}
   </React.StrictMode>,
 );
